@@ -439,6 +439,9 @@ describe('Server Fetcher', function () {
                 };
             };
         describe('should work superagent style', function () {
+            it('should throw if no resource is given', function () {
+                expect(fetcher.read).to.throw('Resource is required for a fetcher request');
+            });
             it('should handle CREATE', function (done) {
                 var operation = 'create';
                 fetcher

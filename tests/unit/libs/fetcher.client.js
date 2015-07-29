@@ -140,6 +140,9 @@ describe('Client Fetcher', function () {
             };
         describe('should work superagent style', function (done) {
             testCrud(it, resource, params, body, config, callback);
+            it('should throw if no resource is given', function () {
+                expect(fetcher.read).to.throw('Resource is required for a fetcher request');
+            });
         });
         describe('should be backwards compatible', function (done) {
             // with config
