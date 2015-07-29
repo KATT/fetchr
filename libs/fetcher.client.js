@@ -37,6 +37,8 @@ function parseResponse(response) {
 }
 
 /**
+ * A RequestClient instance represents a single fetcher request.
+ * The constructor requires `operation` (CRUD) and `resource`.
  * @class RequestClient
  * @param {String} operation The CRUD operation name: 'create|read|update|delete'.
  * @param {String} resource name of fetcher/service
@@ -44,57 +46,66 @@ function parseResponse(response) {
  * @constructor
  */
 function Request (operation, resource, options) {
-    this.operation = operation;
-    this.resource = resource;
+    if (!resource) {
+        throw new Error('Resource is required for a fetcher request');
+    }
 
+    this.operation = operation || OP_READ;
+    this.resource = resource;
     this.options = {
         xhrPath: options.xhrPath || DEFAULT_XHR_PATH,
         xhrTimeout: options.xhrTimeout || DEFAULT_XHR_TIMEOUT,
         corsPath: options.corsPath,
         context: options.context || {}
     };
-
     this._params = {};
     this._body = null;
     this._clientConfig = {};
 }
 
 /**
+ * Add params to this fetcher request
  * @method params
  * @memberof Request
  * @param {Object} params Information carried in query and matrix parameters in typical REST API
  */
 Request.prototype.params = function (params) {
-    this._params = params;
+    this._params = params || {};
     return this;
 };
+
 /**
+ * Add body to this fetcher request
  * @method body
  * @memberof Request
  * @param {Object} body The JSON object that contains the resource data being updated for this request. 
  *                      Not used for read and delete operations.
  */
 Request.prototype.body = function (body) {
-    this._body = body;
+    this._body = body || null;
     return this;
 };
+
 /**
+ * Add clientConfig to this fetcher request
  * @method clientConfig
  * @memberof Request
  * @param {Object} config config for this fetcher request
  */
 Request.prototype.clientConfig = function (config) {
-    this._clientConfig = config;
+    this._clientConfig = config || {};
     return this;
 };
+
 /**
  * Execute this fetcher request and call callback.
  * @method end
  * @memberof Request
  * @param {Fetcher~fetcherCallback} callback callback invoked when fetcher/service is complete.
+ * @async
  */
 Request.prototype.end = function (callback) {
-    var clientConfig = this._clientConfig || {};
+    var clientConfig = this._clientConfig;
     var callback = callback || lodash.noop;
     var use_post;
     var allow_retry_post;
@@ -106,10 +117,10 @@ Request.prototype.end = function (callback) {
     if (!uri) {
         uri = clientConfig.cors ? this.options.corsPath : this.options.xhrPath;
     }
-    console.log('uri', uri);
 
     use_post = this.operation !== OP_READ || clientConfig.post_for_read;
-
+    // We use GET request by default for READ operation, but you can override that behavior
+    // by specifying {post_for_read: true} in your request's clientConfig
     if (!use_post) {
         var getUriFn = lodash.isFunction(clientConfig.constructGetUri) ? clientConfig.constructGetUri : defaultConstructGetUri;
         var get_uri = getUriFn.call(this, uri, this.resource, this._params, clientConfig, this.options.context);
@@ -167,11 +178,14 @@ Request.prototype.end = function (callback) {
 };
 
 /**
+ * Build a final uri by adding query params to base uri from this.context
  * @method _constructGroupUri
+ * @param {String} uri the base uri
  * @private
  */
 Request.prototype._constructGroupUri = function (uri) {
-    var query = [], final_uri = uri;
+    var query = [];
+    var final_uri = uri;
     lodash.forEach(this.options.context, function eachContext(v, k) {
         query.push(k + '=' + encodeURIComponent(v));
     });
@@ -182,6 +196,7 @@ Request.prototype._constructGroupUri = function (uri) {
 };
 
 /**
+ * Fetcher class for the client. Provides CRUD methods.
  * @class FetcherClient
  * @param {object} options configuration options for Fetcher
  * @param {string} [options.xhrPath="/api"] The path for XHR requests
@@ -214,7 +229,6 @@ Fetcher.prototype = {
      */
     create: function (resource, params, body, clientConfig, callback) {
         var request = new Request('create', resource, this.options);
-        console.log('create options', this.options);
         if (1 === arguments.length) {
             return request;
         }

@@ -149,7 +149,8 @@ On the serverside, xhrPath and xhrTimeout are not needed and are ignored.
 ```js
 var Fetcher = require('fetchr');
 var fetcher = new Fetcher({
-    xhrPath: '/myCustomAPIEndpoint'
+    xhrPath: '/myCustomAPIEndpoint',
+    xhrTimeout: 4000
 });
 ```
 

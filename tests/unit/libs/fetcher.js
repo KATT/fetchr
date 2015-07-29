@@ -50,13 +50,28 @@ describe('Server Fetcher', function () {
     });
 
     it('should get fetchers by resource and sub resource', function () {
-        var getFetcher = Fetcher.getFetcher.bind(fetcher, mockService.name);
-        expect(getFetcher).to.not.throw;
-        expect(getFetcher()).to.deep.equal(mockService);
-        getFetcher = Fetcher.getFetcher.bind(fetcher, mockService.name + '.subResource');
-        expect(getFetcher).to.not.throw;
-        expect(getFetcher()).to.deep.equal(mockService);
+        var getService = Fetcher.getService.bind(fetcher, mockService.name);
+        expect(getService).to.not.throw;
+        expect(getService()).to.deep.equal(mockService);
+        getService = Fetcher.getService.bind(fetcher, mockService.name + '.subResource');
+        expect(getService).to.not.throw;
+        expect(getService()).to.deep.equal(mockService);
     });
+
+    describe('should be backwards compatible', function () {
+        it('#registerFetcher & #getFetcher', function () {
+            Fetcher.services = {}; // reset services so we can test getFetcher and registerFetcher methods
+            var getFetcher = Fetcher.getFetcher.bind(fetcher, mockService.name);
+            expect(getFetcher).to.throw;
+            Fetcher.registerFetcher(mockService);
+            expect(getFetcher).to.not.throw;
+            expect(getFetcher()).to.deep.equal(mockService);
+            getFetcher = Fetcher.getFetcher.bind(fetcher, mockService.name + '.subResource');
+            expect(getFetcher).to.not.throw;
+            expect(getFetcher()).to.deep.equal(mockService);
+        });
+    });
+
 
     describe('#middleware', function () {
         describe('#POST', function() {
