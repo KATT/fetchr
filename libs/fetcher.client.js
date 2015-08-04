@@ -68,6 +68,7 @@ function Request (operation, resource, options) {
  * @method params
  * @memberof Request
  * @param {Object} params Information carried in query and matrix parameters in typical REST API
+ * @chainable
  */
 Request.prototype.params = function (params) {
     this._params = params || {};
@@ -80,6 +81,7 @@ Request.prototype.params = function (params) {
  * @memberof Request
  * @param {Object} body The JSON object that contains the resource data being updated for this request. 
  *                      Not used for read and delete operations.
+ * @chainable
  */
 Request.prototype.body = function (body) {
     this._body = body || null;
@@ -91,6 +93,7 @@ Request.prototype.body = function (body) {
  * @method clientConfig
  * @memberof Request
  * @param {Object} config config for this fetcher request
+ * @chainable
  */
 Request.prototype.clientConfig = function (config) {
     this._clientConfig = config || {};
